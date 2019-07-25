@@ -8,15 +8,17 @@ class Ball {
       x: 0,
       maxX: this.container.offsetWidth - this.diameter
     }
+    this.allowShot = 0
 
     this.velocity = {
-      y: 200,
-      x: 300,
-      maxVelocity: 600
+      y: 0,
+      x: 0,
+      max: 600
     }
     this.acceleration = -120 // px/s^2
     this.timeTick = 40 //ms
     this.time = this.timeTick / 1000 // s
+
     this.htmlElement = null
   }
 
@@ -53,6 +55,7 @@ class Ball {
       this.position.x <= 0 ? (this.position.x = 0) : (this.position.x = this.position.maxX)
       this.velocity.x = -1 * this.velocity.x
     }
+
     this.render()
   }
 
@@ -60,8 +63,36 @@ class Ball {
     this.htmlElement.style.bottom = this.position.y + 'px'
     this.htmlElement.style.left = this.position.x + 'px'
   }
+
+  getPower() {
+    this.htmlElement.addEventListener('mousedown', () => (this.allowShot = 1))
+
+    const ballCenterY = ball.htmlElement.getBoundingClientRect().y + this.diameter / 2
+    const ballCenterX = ball.htmlElement.getBoundingClientRect().x + this.diameter / 2
+
+    document.addEventListener('mouseup', evt => {
+      if (this.allowShot) {
+        this.velocity.x = (ballCenterX - evt.pageX) * 3
+        console.log(ballCenterX - evt.pageX)
+        if (Math.abs(this.velocity.x) > this.velocity.max) {
+          this.velocity.x >= 0
+            ? (this.velocity.x = this.velocity.max)
+            : this.velocity !== 0 && (this.velocity.x = -1 * this.velocity.max)
+        }
+
+        this.velocity.y = (evt.pageY - ballCenterY) * 3
+        if (Math.abs(this.velocity.y) > this.velocity.max) {
+          this.velocity.y = this.velocity.max
+        }
+      }
+      this.allowShot = 0
+    })
+  }
 }
 
 const ball = new Ball(document.querySelector('.container'), 30)
 
 ball.init().append()
+ball.getPower()
+
+setInterval(ball.move.bind(ball), 40)
