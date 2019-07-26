@@ -1,7 +1,8 @@
 class Ball {
-  constructor(container, radius) {
+  constructor(container, radius, shotsCounter) {
     this.container = container || document.body
     this.radius = radius || 10
+    this.shotsCounter = shotsCounter
     this.position = {
       y: 0,
       maxY: this.container.offsetHeight - this.radius * 2 - 2,
@@ -114,6 +115,8 @@ class Ball {
           this.velocity.y = this.velocity.max
         }
       }
+
+      this.shotsCounter()
       line.style.width = 0
       this.allowShot = 0
     })
@@ -125,10 +128,11 @@ class Target {
     this.container = container || document.body
     this.timeTick = 40 //ms
     this.time = this.timeTick / 1000 // s
+    this.wasCollision = false
 
     this.velocity = {
-      y: level > 6 ? Math.random() * 100 : 0,
-      x: level % 2 && level > 3 ? level * 25 : level * -25
+      y: level > 9 ? Math.random() * 100 + level * 5 : 0,
+      x: level > 4 ? (level % 2 ? level * 35 : level * -35) : 0
     }
 
     this.radius = Math.random() * 15 + 10
@@ -198,21 +202,34 @@ class Game {
   constructor(container) {
     this.container = container || document.body
     this.timeTick = 40 //ms
-    this.level = 0
+    this.level = 1
+    this.shots = 0
 
     this.mainInterval = null
     this.ball = null
     this.target = null
     this.targetContainer = null
+    this.levelContainer = null
+    this.shotsContainer = null
   }
 
   init() {
-    this.ball = new Ball(this.container, 20)
+    this.ball = new Ball(this.container, 15, this.shotsCounter())
     this.ball.init()
 
     this.targetContainer = document.createElement('div')
     this.targetContainer.classList.add('target-container')
     this.container.appendChild(this.targetContainer)
+
+    this.levelContainer = document.createElement('div')
+    this.levelContainer.classList.add('level-container')
+    this.levelContainer.innerText = `Level: ${this.level}/30`
+    this.container.appendChild(this.levelContainer)
+
+    this.shotsContainer = document.createElement('div')
+    this.shotsContainer.classList.add('shots-container')
+    this.shotsContainer.innerText = `Shots: ${this.shots}`
+    this.container.appendChild(this.shotsContainer)
 
     this.mainInterval = setInterval(this.mainLoop.bind(this), this.timeTick)
 
@@ -224,15 +241,23 @@ class Game {
   }
 
   isColision() {
-    if (this.target) {
+    if (this.target && !this.target.wasCollision) {
       const a = this.ball.position.center.x - this.target.position.center.x
       const b = this.ball.position.center.y - this.target.position.center.y
       const c = Math.sqrt(a * a + b * b)
 
       if (c <= this.ball.radius + this.target.radius) {
-        this.target = null
-        this.targetContainer.innerText = ''
-        this.level++
+        this.target.wasCollision = true
+        this.target.velocity.x = 0
+        this.target.velocity.y = 0
+        this.target.htmlElement.style.transition = '1s'
+        this.target.htmlElement.style.opacity = '0'
+        setTimeout(() => {
+          this.target = null
+          this.targetContainer.innerText = ''
+          this.level++
+          this.levelContainer.innerText = `Level: ${this.level}/30`
+        }, 1000)
       }
     }
   }
@@ -249,6 +274,13 @@ class Game {
     if (this.target) this.target.move()
     this.isColision()
     this.newTarget()
+  }
+
+  shotsCounter() {
+    return () => {
+      this.shots++
+      this.shotsContainer.innerText = `Shots: ${this.shots}`
+    }
   }
 }
 
