@@ -20,7 +20,7 @@ class Ball {
       x: 0,
       max: 350
     }
-    this.acceleration = -40 // px/s^2
+    this.acceleration = -60 // px/s^2
     this.timeTick = 40 //ms
     this.time = this.timeTick / 1000 // s
 
@@ -203,11 +203,13 @@ class Game {
     this.container = container || document.body
     this.timeTick = 40 //ms
     this.level = 1
-    this.maxLevel = 20
+    this.maxLevel = 2
     this.shots = 0
 
+    this.ball = new Ball(this.container, 15, this.shotsCounter())
+    this.ball.init()
+
     this.mainInterval = null
-    this.ball = null
     this.target = null
     this.targetContainer = null
     this.levelContainer = null
@@ -215,9 +217,6 @@ class Game {
   }
 
   init() {
-    this.ball = new Ball(this.container, 15, this.shotsCounter())
-    this.ball.init().append()
-
     this.targetContainer = document.createElement('div')
     this.targetContainer.classList.add('target-container')
     this.container.appendChild(this.targetContainer)
@@ -231,6 +230,8 @@ class Game {
     this.shotsContainer.classList.add('shots-container')
     this.shotsContainer.innerText = `Shots: ${this.shots}`
     this.container.appendChild(this.shotsContainer)
+
+    this.ball.append()
 
     this.mainInterval = setInterval(this.mainLoop.bind(this), this.timeTick)
 
@@ -273,7 +274,14 @@ class Game {
     againButton.classList.add('splash-screen__start-button')
     againButton.innerText = 'Play again!'
     againButton.addEventListener('click', () => {
-      location.reload()
+      this.container.innerText = ''
+      this.level = 0
+      this.shots = 0
+      this.ball.velocity.y = 0
+      this.ball.velocity.x = 0
+      this.ball.position.x = 0
+      this.ball.position.y = 0
+      this.init()
     })
     endScreen.appendChild(againButton)
 
@@ -288,9 +296,9 @@ class Game {
 
       if (c <= this.ball.radius + this.target.radius) {
         this.target.wasCollision = true
-        this.target.velocity.x = 0
-        this.target.velocity.y = 0
         setTimeout(() => {
+          this.target.velocity.x = 0
+          this.target.velocity.y = 0
           this.target.htmlElement.style.transition = '1s'
           this.target.htmlElement.style.opacity = '0'
           this.level++
