@@ -114,9 +114,9 @@ class Ball {
         if (Math.abs(this.velocity.y) > this.velocity.max) {
           this.velocity.y = this.velocity.max
         }
+        if (this.velocity.y > 50) this.shotsCounter()
       }
 
-      this.shotsCounter()
       line.style.width = 0
       this.allowShot = 0
     })
@@ -149,7 +149,7 @@ class Target {
       },
       min: {
         x: 0,
-        y: this.container.offsetHeight / 3
+        y: this.container.offsetHeight / 2
       }
     }
     this.position.center.x = this.radius + this.position.x
@@ -203,6 +203,7 @@ class Game {
     this.container = container || document.body
     this.timeTick = 40 //ms
     this.level = 1
+    this.maxLevel = 20
     this.shots = 0
 
     this.mainInterval = null
@@ -215,7 +216,7 @@ class Game {
 
   init() {
     this.ball = new Ball(this.container, 15, this.shotsCounter())
-    this.ball.init()
+    this.ball.init().append()
 
     this.targetContainer = document.createElement('div')
     this.targetContainer.classList.add('target-container')
@@ -223,7 +224,7 @@ class Game {
 
     this.levelContainer = document.createElement('div')
     this.levelContainer.classList.add('level-container')
-    this.levelContainer.innerText = `Level: ${this.level}/30`
+    this.levelContainer.innerText = `Level: ${this.level}/${this.maxLevel}`
     this.container.appendChild(this.levelContainer)
 
     this.shotsContainer = document.createElement('div')
@@ -236,8 +237,47 @@ class Game {
     return this
   }
 
-  append() {
-    this.ball.append()
+  initSplashScreen() {
+    const splashScreen = document.createElement('div')
+    splashScreen.classList.add('splash-screen')
+
+    const description = document.createElement('p')
+    description.classList.add('splash-screen__description')
+    description.innerText = 'To play use mouse, hit target by ball, shot as few times as you can.'
+    splashScreen.appendChild(description)
+
+    const startButton = document.createElement('div')
+    startButton.classList.add('splash-screen__start-button')
+    startButton.innerText = 'Start!'
+    startButton.addEventListener('click', () => {
+      this.container.innerText = ''
+      this.init()
+    })
+    splashScreen.appendChild(startButton)
+
+    this.container.append(splashScreen)
+  }
+
+  initEndScreen() {
+    clearInterval(this.mainInterval)
+
+    const endScreen = document.createElement('div')
+    endScreen.classList.add('splash-screen')
+
+    const description = document.createElement('p')
+    description.classList.add('splash-screen__description')
+    description.innerText = `Shots: ${this.shots}`
+    endScreen.appendChild(description)
+
+    const againButton = document.createElement('div')
+    againButton.classList.add('splash-screen__start-button')
+    againButton.innerText = 'Play again!'
+    againButton.addEventListener('click', () => {
+      location.reload()
+    })
+    endScreen.appendChild(againButton)
+
+    this.container.append(endScreen)
   }
 
   isColision() {
@@ -250,14 +290,20 @@ class Game {
         this.target.wasCollision = true
         this.target.velocity.x = 0
         this.target.velocity.y = 0
-        this.target.htmlElement.style.transition = '1s'
-        this.target.htmlElement.style.opacity = '0'
         setTimeout(() => {
-          this.target = null
-          this.targetContainer.innerText = ''
+          this.target.htmlElement.style.transition = '1s'
+          this.target.htmlElement.style.opacity = '0'
           this.level++
-          this.levelContainer.innerText = `Level: ${this.level}/30`
-        }, 1000)
+          if (this.level > this.maxLevel) {
+            this.level = this.maxLevel
+            this.initEndScreen()
+          }
+          this.levelContainer.innerText = `Level: ${this.level}/${this.maxLevel}`
+          setTimeout(() => {
+            this.target = null
+            this.targetContainer.innerText = ''
+          }, 800)
+        }, 50)
       }
     }
   }
@@ -285,4 +331,4 @@ class Game {
 }
 
 const game = new Game(document.querySelector('.container'))
-game.init().append()
+game.initSplashScreen()
