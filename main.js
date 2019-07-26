@@ -120,9 +120,13 @@ class Ball {
 class Target {
   constructor(container, level) {
     this.container = container || document.body
-    this.level = level
     this.timeTick = 40 //ms
     this.time = this.timeTick / 1000 // s
+
+    this.velocity = {
+      y: level > 3 ? Math.random() * 100 : 0,
+      x: level % 2 ? level * 25 : level * -25
+    }
 
     this.radius = Math.random() * 15 + 10
     this.position = {
@@ -133,8 +137,12 @@ class Target {
         y: null
       },
       max: {
-        x: null,
-        y: null
+        x: this.container.offsetWidth - 2 * this.radius,
+        y: this.container.offsetHeight - 2 * this.radius
+      },
+      min: {
+        x: 0,
+        y: this.container.offsetHeight / 3
       }
     }
     this.position.center.x = this.radius + this.position.x
@@ -157,13 +165,37 @@ class Target {
   append() {
     this.container.appendChild(this.htmlElement)
   }
+
+  move() {
+    this.position.x += this.velocity.x * this.time
+    if (this.position.x <= this.position.min.x || this.position.x >= this.position.max.x) {
+      this.position.x <= this.position.min.x
+        ? (this.position.x = this.position.min.x)
+        : (this.position.x = this.position.max.x)
+      this.velocity.x = -1 * this.velocity.x
+    }
+
+    this.position.y += this.velocity.y * this.time
+    if (this.position.y <= this.position.min.y || this.position.y >= this.position.max.y) {
+      this.position.y <= this.position.min.y
+        ? (this.position.y = this.position.min.y)
+        : (this.position.y = this.position.max.y)
+      this.velocity.y = -1 * this.velocity.y
+    }
+
+    this.position.center.x = this.radius + this.position.x
+    this.position.center.y = this.radius + this.position.y
+
+    this.htmlElement.style.bottom = this.position.y + 'px'
+    this.htmlElement.style.left = this.position.x + 'px'
+  }
 }
 
 class Game {
   constructor(container) {
     this.container = container || document.body
     this.timeTick = 40 //ms
-    this.level = 1
+    this.level = 0
 
     this.mainInterval = null
     this.ball = null
@@ -197,6 +229,7 @@ class Game {
       if (c <= this.ball.radius + this.target.radius) {
         this.target = null
         this.targetContainer.innerText = ''
+        this.level++
       }
     }
   }
@@ -210,6 +243,7 @@ class Game {
 
   mainLoop() {
     this.ball.move()
+    if (this.target) this.target.move()
     this.isColision()
     this.newTarget()
   }
