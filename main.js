@@ -78,18 +78,20 @@ class Ball {
     line.classList.add('line')
     this.htmlElement.appendChild(line)
 
-    this.htmlElement.addEventListener('mousedown', () => {
+    this.htmlElement.addEventListener('mousedown', evt => {
+      evt.preventDefault()
       if (!this.velocity.y) this.allowShot = 1
       ballCenterY = this.htmlElement.getBoundingClientRect().y + this.radius
       ballCenterX = this.htmlElement.getBoundingClientRect().x + this.radius
     })
 
     document.addEventListener('mousemove', evt => {
+      evt.preventDefault()
       if (this.allowShot) {
         const lineX = evt.pageX - ballCenterX
         const lineY = evt.pageY - ballCenterY
         let lineWidth = Math.sqrt(Math.pow(lineX, 2) + Math.pow(lineY, 2)) - 10
-        if (lineWidth > 200) lineWidth = 200
+        if (lineWidth > 150) lineWidth = 150
         const deg = lineX >= 0 ? Math.atan(lineY / lineX) : Math.atan(lineY / lineX) + Math.PI
 
         line.style.width = lineWidth + 'px'
@@ -98,6 +100,7 @@ class Ball {
     })
 
     document.addEventListener('mouseup', evt => {
+      evt.preventDefault()
       if (this.allowShot === 1) {
         this.velocity.x = (ballCenterX - evt.pageX) * 2
         if (Math.abs(this.velocity.x) > this.velocity.max) {
