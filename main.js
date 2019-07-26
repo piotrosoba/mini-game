@@ -17,9 +17,9 @@ class Ball {
     this.velocity = {
       y: 0,
       x: 0,
-      max: 400
+      max: 350
     }
-    this.acceleration = -120 // px/s^2
+    this.acceleration = -40 // px/s^2
     this.timeTick = 40 //ms
     this.time = this.timeTick / 1000 // s
 
@@ -84,24 +84,6 @@ class Ball {
       ballCenterX = this.htmlElement.getBoundingClientRect().x + this.radius
     })
 
-    document.addEventListener('mouseup', evt => {
-      if (this.allowShot === 1) {
-        this.velocity.x = (ballCenterX - evt.pageX) * 3
-        if (Math.abs(this.velocity.x) > this.velocity.max) {
-          this.velocity.x >= 0
-            ? (this.velocity.x = this.velocity.max)
-            : this.velocity !== 0 && (this.velocity.x = -1 * this.velocity.max)
-        }
-
-        this.velocity.y = (evt.pageY - ballCenterY) * 3
-        if (Math.abs(this.velocity.y) > this.velocity.max) {
-          this.velocity.y = this.velocity.max
-        }
-      }
-      line.style.width = 0
-      this.allowShot = 0
-    })
-
     document.addEventListener('mousemove', evt => {
       if (this.allowShot) {
         const lineX = evt.pageX - ballCenterX
@@ -114,6 +96,24 @@ class Ball {
         line.style.transform = 'rotate(' + deg + 'rad)'
       }
     })
+
+    document.addEventListener('mouseup', evt => {
+      if (this.allowShot === 1) {
+        this.velocity.x = (ballCenterX - evt.pageX) * 2
+        if (Math.abs(this.velocity.x) > this.velocity.max) {
+          this.velocity.x >= 0
+            ? (this.velocity.x = this.velocity.max)
+            : this.velocity !== 0 && (this.velocity.x = -1 * this.velocity.max)
+        }
+
+        this.velocity.y = (evt.pageY - ballCenterY) * 2
+        if (Math.abs(this.velocity.y) > this.velocity.max) {
+          this.velocity.y = this.velocity.max
+        }
+      }
+      line.style.width = 0
+      this.allowShot = 0
+    })
   }
 }
 
@@ -124,8 +124,8 @@ class Target {
     this.time = this.timeTick / 1000 // s
 
     this.velocity = {
-      y: level > 3 ? Math.random() * 100 : 0,
-      x: level % 2 ? level * 25 : level * -25
+      y: level > 6 ? Math.random() * 100 : 0,
+      x: level % 2 && level > 3 ? level * 25 : level * -25
     }
 
     this.radius = Math.random() * 15 + 10
