@@ -1,19 +1,23 @@
 class Ball {
-  constructor(container, diameter) {
+  constructor(container, radius) {
     this.container = container || document.body
-    this.diameter = diameter || 30
+    this.radius = radius || 10
     this.position = {
       y: 0,
-      maxY: this.container.offsetHeight - this.diameter,
+      maxY: this.container.offsetHeight - this.radius * 2 - 2,
       x: 0,
-      maxX: this.container.offsetWidth - this.diameter
+      maxX: this.container.offsetWidth - this.radius * 2 - 2,
+      center: {
+        y: 0 + this.radius,
+        x: 0 + this.radius
+      }
     }
     this.allowShot = 0
 
     this.velocity = {
       y: 0,
       x: 0,
-      max: 600
+      max: 400
     }
     this.acceleration = -120 // px/s^2
     this.timeTick = 40 //ms
@@ -25,8 +29,8 @@ class Ball {
   init() {
     this.htmlElement = document.createElement('div')
     this.htmlElement.classList.add('ball')
-    this.htmlElement.style.width = this.diameter + 'px'
-    this.htmlElement.style.height = this.diameter + 'px'
+    this.htmlElement.style.width = this.radius * 2 + 'px'
+    this.htmlElement.style.height = this.radius * 2 + 'px'
     this.htmlElement.style.bottom = this.position.y + 'px'
     this.htmlElement.style.left = this.position.x + 'px'
 
@@ -59,6 +63,9 @@ class Ball {
       this.velocity.x = 0
     }
 
+    this.position.center.x = this.position.x + this.radius
+    this.position.center.y = this.position.y + this.radius
+
     this.htmlElement.style.bottom = this.position.y + 'px'
     this.htmlElement.style.left = this.position.x + 'px'
   }
@@ -73,8 +80,8 @@ class Ball {
 
     this.htmlElement.addEventListener('mousedown', () => {
       if (!this.velocity.y) this.allowShot = 1
-      ballCenterY = ball.htmlElement.getBoundingClientRect().y + this.diameter / 2
-      ballCenterX = ball.htmlElement.getBoundingClientRect().x + this.diameter / 2
+      ballCenterY = this.htmlElement.getBoundingClientRect().y + this.radius
+      ballCenterX = this.htmlElement.getBoundingClientRect().x + this.radius
     })
 
     document.addEventListener('mouseup', evt => {
@@ -110,8 +117,103 @@ class Ball {
   }
 }
 
-const ball = new Ball(document.querySelector('.container'), 30)
+class Target {
+  constructor(container, level) {
+    this.container = container || document.body
+    this.level = level
+    this.timeTick = 40 //ms
+    this.time = this.timeTick / 1000 // s
 
-ball.init().append()
+    this.radius = Math.random() * 15 + 10
+    this.position = {
+      x: ((Math.random() * 90 + 5) / 100) * this.container.offsetWidth,
+      y: ((Math.random() * 40 + 50) / 100) * this.container.offsetHeight,
+      center: {
+        x: null,
+        y: null
+      },
+      max: {
+        x: null,
+        y: null
+      }
+    }
+    this.position.center.x = this.radius + this.position.x
+    this.position.center.y = this.radius + this.position.y
 
-setInterval(ball.move.bind(ball), 40)
+    this.htmlElement = null
+  }
+
+  init() {
+    this.htmlElement = document.createElement('div')
+    this.htmlElement.classList.add('target')
+    this.htmlElement.style.width = this.radius * 2 + 'px'
+    this.htmlElement.style.height = this.radius * 2 + 'px'
+    this.htmlElement.style.bottom = this.position.y + 'px'
+    this.htmlElement.style.left = this.position.x + 'px'
+
+    return this
+  }
+
+  append() {
+    this.container.appendChild(this.htmlElement)
+  }
+}
+
+class Game {
+  constructor(container) {
+    this.container = container || document.body
+    this.timeTick = 40 //ms
+    this.level = 1
+
+    this.mainInterval = null
+    this.ball = null
+    this.target = null
+    this.targetContainer = null
+  }
+
+  init() {
+    this.ball = new Ball(this.container, 20)
+    this.ball.init()
+
+    this.targetContainer = document.createElement('div')
+    this.targetContainer.classList.add('target-container')
+    this.container.appendChild(this.targetContainer)
+
+    this.mainInterval = setInterval(this.mainLoop.bind(this), this.timeTick)
+
+    return this
+  }
+
+  append() {
+    this.ball.append()
+  }
+
+  isColision() {
+    if (this.target) {
+      const a = this.ball.position.center.x - this.target.position.center.x
+      const b = this.ball.position.center.y - this.target.position.center.y
+      const c = Math.sqrt(a * a + b * b)
+
+      if (c <= this.ball.radius + this.target.radius) {
+        this.target = null
+        this.targetContainer.innerText = ''
+      }
+    }
+  }
+
+  newTarget() {
+    if (!this.target && !this.ball.velocity.y) {
+      this.target = new Target(this.targetContainer, this.level)
+      this.target.init().append()
+    }
+  }
+
+  mainLoop() {
+    this.ball.move()
+    this.isColision()
+    this.newTarget()
+  }
+}
+
+const game = new Game(document.querySelector('.container'))
+game.init().append()
