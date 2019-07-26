@@ -9,7 +9,7 @@ body {
 .container {
   position: relative;
   width: 800px;
-  height: 400px;
+  height: 350px;
   border: 2px solid black;
   border-radius: 4px;
   background-color: azure;
@@ -71,6 +71,7 @@ body {
 
 .splash-screen__description {
   font-size: 20px;
+  padding: 0px 60px;
 }
 
 .splash-screen__start-button {

@@ -6,7 +6,7 @@ class Ball {
     this.position = {
       y: 0,
       maxY: this.container.offsetHeight - this.radius * 2 - 2,
-      x: 0,
+      x: this.container.offsetWidth / 2 - this.radius,
       maxX: this.container.offsetWidth - this.radius * 2 - 2,
       center: {
         y: 0 + this.radius,
@@ -20,7 +20,7 @@ class Ball {
       x: 0,
       max: 350
     }
-    this.acceleration = -60 // px/s^2
+    this.acceleration = -120 // px/s^2
     this.timeTick = 40 //ms
     this.time = this.timeTick / 1000 // s
 
@@ -49,7 +49,7 @@ class Ball {
     this.position.y += this.velocity.y * this.time + (this.acceleration * this.time * this.time) / 2
 
     this.position.x += this.velocity.x * this.time
-    if (this.position.x <= 0 || this.position.x >= this.position.maxX) {
+    if (this.position.x < 0 || this.position.x >= this.position.maxX) {
       this.position.x <= 0 ? (this.position.x = 0) : (this.position.x = this.position.maxX)
       this.velocity.x = -1 * this.velocity.x
     }
@@ -78,6 +78,15 @@ class Ball {
     const line = document.createElement('div')
     line.classList.add('line')
     this.htmlElement.appendChild(line)
+
+    this.container.addEventListener('click', evt => {
+      if (Math.abs(this.position.y) > 0) {
+        this.velocity.y = 0
+        this.velocity.x = 0
+        this.position.x = this.container.offsetWidth / 2 - this.radius
+        this.position.y = 0
+      }
+    })
 
     this.htmlElement.addEventListener('mousedown', evt => {
       evt.preventDefault()
@@ -110,7 +119,7 @@ class Ball {
             : this.velocity !== 0 && (this.velocity.x = -1 * this.velocity.max)
         }
 
-        this.velocity.y = (evt.pageY - ballCenterY) * 2
+        this.velocity.y = Math.abs(evt.pageY - ballCenterY) * 2
         if (Math.abs(this.velocity.y) > this.velocity.max) {
           this.velocity.y = this.velocity.max
         }
@@ -131,8 +140,8 @@ class Target {
     this.wasCollision = false
 
     this.velocity = {
-      y: level > 9 ? Math.random() * 100 + level * 5 : 0,
-      x: level > 4 ? (level % 2 ? level * 35 : level * -35) : 0
+      y: level >= 7 ? Math.random() * 100 + level * 5 : 0,
+      x: level >= 4 ? (level % 2 ? level * 35 : level * -35) : 0
     }
 
     this.radius = Math.random() * 15 + 10
@@ -149,7 +158,7 @@ class Target {
       },
       min: {
         x: 0,
-        y: this.container.offsetHeight / 2
+        y: this.container.offsetHeight / 4
       }
     }
     this.position.center.x = this.radius + this.position.x
@@ -203,7 +212,7 @@ class Game {
     this.container = container || document.body
     this.timeTick = 40 //ms
     this.level = 1
-    this.maxLevel = 2
+    this.maxLevel = 20
     this.shots = 0
 
     this.ball = new Ball(this.container, 15, this.shotsCounter())
@@ -244,7 +253,8 @@ class Game {
 
     const description = document.createElement('p')
     description.classList.add('splash-screen__description')
-    description.innerText = 'To play use mouse, hit target by ball, shot as few times as you can.'
+    description.innerText =
+      'To play use mouse, hit target by ball, shot as few times as you can. You can reset your ball by click on game window.'
     splashScreen.appendChild(description)
 
     const startButton = document.createElement('div')
@@ -279,7 +289,7 @@ class Game {
       this.shots = 0
       this.ball.velocity.y = 0
       this.ball.velocity.x = 0
-      this.ball.position.x = 0
+      this.ball.position.x = this.container.offsetWidth / 2 - this.ball.radius
       this.ball.position.y = 0
       this.init()
     })
@@ -299,25 +309,36 @@ class Game {
         setTimeout(() => {
           this.target.velocity.x = 0
           this.target.velocity.y = 0
-          this.target.htmlElement.style.transition = '1s'
+          this.target.htmlElement.style.transition = '200ms'
           this.target.htmlElement.style.opacity = '0'
           this.level++
           if (this.level > this.maxLevel) {
             this.level = this.maxLevel
             this.initEndScreen()
           }
+
+          this.ball.velocity.y = 0
+          this.ball.velocity.x = 0
+          this.ball.position.x = this.container.offsetWidth / 2 - this.ball.radius
+          this.ball.position.y = 0
+
+          // if (this.ball.velocity.y > 0) this.ball.velocity.y = this.ball.velocity.y * -1
+          // this.ball.velocity.x = this.ball.velocity.x * 0.6
+
+          // this.ball.acceleration = -200
+
           this.levelContainer.innerText = `Level: ${this.level}/${this.maxLevel}`
           setTimeout(() => {
             this.target = null
             this.targetContainer.innerText = ''
-          }, 800)
+          }, 200)
         }, 50)
       }
     }
   }
 
   newTarget() {
-    if (!this.target && !this.ball.velocity.y) {
+    if (!this.target && !this.ball.position.y) {
       this.target = new Target(this.targetContainer, this.level)
       this.target.init().append()
     }
