@@ -19,7 +19,7 @@ class Ball {
     this.velocity = {
       y: 0,
       x: 0,
-      max: 350
+      max: 470
     }
     this.acceleration = -120 // px/s^2
     this.timeTick = 40 //ms
@@ -37,7 +37,7 @@ class Ball {
     this.htmlElement.style.height = this.radius * 2 + 'px'
     this.htmlElement.style.bottom = this.position.y + 'px'
     this.htmlElement.style.left = this.position.x + 'px'
-    this.htmlElement.style.transition = this.timeTick + 'ms linear'
+    this.htmlElement.style.transition = this.timeTick + 'ms'
 
     this.htmlElementBackground = document.createElement('div')
     this.htmlElementBackground.classList.add('ball-background')
@@ -90,7 +90,7 @@ class Ball {
   }
 
   backToCenter() {
-    this.htmlElement.style.transition = '350ms linear'
+    this.htmlElement.style.transition = '350ms'
     this.velocity.y = 0
     this.velocity.x = 0
     this.position.x = this.container.offsetWidth / 2 - this.radius
@@ -149,7 +149,7 @@ class Ball {
           this.velocity.y = this.velocity.max
         }
         if (this.velocity.y > 50) this.shotsCounter()
-        this.htmlElement.style.transition = this.timeTick + 'ms linear'
+        this.htmlElement.style.transition = this.timeTick + 'ms'
       }
 
       line.style.width = 0
@@ -170,7 +170,7 @@ class Target {
       x: level >= 4 ? (level % 2 ? level * 35 : level * -35) : 0
     }
 
-    this.radius = Math.random() * 10 + 20
+    this.radius = Math.random() * 31 + 19
     this.position = {
       x: ((Math.random() * 90 + 5) / 100) * this.container.offsetWidth,
       y: ((Math.random() * 40 + 50) / 100) * this.container.offsetHeight,
@@ -247,6 +247,9 @@ class Target {
 
     this.htmlElement.style.bottom = this.position.y + 'px'
     this.htmlElement.style.left = this.position.x + 'px'
+
+    this.htmlElement.style.bottom = this.position.y + 'px'
+    this.htmlElement.style.left = this.position.x + 'px'
   }
 }
 
@@ -258,7 +261,7 @@ class Game {
     this.maxLevel = 20
     this.shots = 0
 
-    this.ball = new Ball(this.container, 23, this.shotsCounter())
+    this.ball = new Ball(this.container, 25, this.shotsCounter())
     this.ball.init()
 
     this.mainInterval = null
@@ -300,12 +303,12 @@ class Game {
     const description = document.createElement('p')
     description.classList.add('splash-screen__description')
     description.innerText =
-      'To play use mouse, hit target by ball, shot as few times as you can. You can reset your ball by click on game window.'
+      'To play use mouse, shot as few times as you can. You can reset your ball by click on game window.'
     splashScreen.appendChild(description)
 
     const startButton = document.createElement('div')
     startButton.classList.add('splash-screen__start-button')
-    startButton.innerText = 'Start!'
+    startButton.innerText = 'START!'
     startButton.addEventListener('click', () => {
       this.container.innerText = ''
       this.init()
@@ -323,12 +326,17 @@ class Game {
 
     const description = document.createElement('p')
     description.classList.add('splash-screen__description')
-    description.innerText = `Shots: ${this.shots}`
+    description.innerHTML =
+      this.shots <= 30
+        ? `HOORAY! :)
+Only ${this.shots} shots.`
+        : `You can do it better... :(
+Too much shots - ${this.shots}.`
     endScreen.appendChild(description)
 
     const againButton = document.createElement('div')
     againButton.classList.add('splash-screen__start-button')
-    againButton.innerText = 'Play again!'
+    againButton.innerText = 'PLAY AGAIN!'
     againButton.addEventListener('click', () => {
       this.container.innerText = ''
       this.level = 0

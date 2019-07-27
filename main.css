@@ -1,19 +1,24 @@
+* {
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial,
+    sans-serif;
+  color: #4d9900;
+}
+
 body {
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
   height: 100%;
+  background-color: #ffffcc;
 }
 
 .container {
   position: relative;
-  width: 80%;
+  width: 80vw;
   height: 80vh;
-  border: 2px solid black;
-  border-radius: 4px;
+  border: 2px solid #ddff99;
   background-image: url('./background.jpg');
-  /* background-position: bottom; */
   background-size: cover;
   margin-top: 5px;
 }
@@ -50,10 +55,10 @@ body {
 
 .line {
   position: absolute;
-  height: 3px;
-  background-color: red;
+  height: 5px;
+  background-color: #4d9900;
   transform-origin: top left;
-  border-radius: 100%;
+  border-radius: 75%;
   cursor: default;
   top: 50%;
   left: 50%;
@@ -97,9 +102,18 @@ body {
 }
 
 .level-container {
+  font-size: 20px;
+  font-weight: bold;
+  position: absolute;
+  right: 0;
 }
 
 .shots-container {
+  font-weight: bold;
+  position: absolute;
+  right: 0;
+  top: 20px;
+  font-size: 18px;
 }
 
 .splash-screen {
@@ -119,8 +133,10 @@ body {
 }
 
 .splash-screen__description {
-  font-size: 20px;
+  font-size: 35px;
   padding: 0px 60px;
+  text-align: center;
+  color: #1a3300;
 }
 
 .splash-screen__start-button {
