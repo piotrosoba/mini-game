@@ -34,6 +34,7 @@ class Ball {
     this.htmlElement.style.height = this.radius * 2 + 'px'
     this.htmlElement.style.bottom = this.position.y + 'px'
     this.htmlElement.style.left = this.position.x + 'px'
+    this.htmlElement.style.transition = this.timeTick + 'ms'
 
     this.getPower()
 
@@ -81,6 +82,7 @@ class Ball {
 
     this.container.addEventListener('click', evt => {
       if (Math.abs(this.position.y) > 0) {
+        this.htmlElement.style.transition = '1s'
         this.velocity.y = 0
         this.velocity.x = 0
         this.position.x = this.container.offsetWidth / 2 - this.radius
@@ -124,6 +126,7 @@ class Ball {
           this.velocity.y = this.velocity.max
         }
         if (this.velocity.y > 50) this.shotsCounter()
+        this.htmlElement.style.transition = this.timeTick + 'ms'
       }
 
       line.style.width = 0
@@ -174,6 +177,7 @@ class Target {
     this.htmlElement.style.height = this.radius * 2 + 'px'
     this.htmlElement.style.bottom = this.position.y + 'px'
     this.htmlElement.style.left = this.position.x + 'px'
+    this.htmlElement.style.tansition = this.timeTick + 'ms'
 
     return this
   }
@@ -317,15 +321,11 @@ class Game {
             this.initEndScreen()
           }
 
+          this.ball.htmlElement.style.transition = '1s'
           this.ball.velocity.y = 0
           this.ball.velocity.x = 0
           this.ball.position.x = this.container.offsetWidth / 2 - this.ball.radius
           this.ball.position.y = 0
-
-          // if (this.ball.velocity.y > 0) this.ball.velocity.y = this.ball.velocity.y * -1
-          // this.ball.velocity.x = this.ball.velocity.x * 0.6
-
-          // this.ball.acceleration = -200
 
           this.levelContainer.innerText = `Level: ${this.level}/${this.maxLevel}`
           setTimeout(() => {
