@@ -3,6 +3,7 @@ class Ball {
     this.container = container || document.body
     this.radius = radius || 10
     this.shotsCounter = shotsCounter
+    this.angle = 0
     this.position = {
       y: 0,
       maxY: this.container.offsetHeight - this.radius * 2 - 2,
@@ -25,6 +26,8 @@ class Ball {
     this.time = this.timeTick / 1000 // s
 
     this.htmlElement = null
+    this.htmlElementBackground = null
+    this.htmlElementEyes = null
   }
 
   init() {
@@ -35,6 +38,14 @@ class Ball {
     this.htmlElement.style.bottom = this.position.y + 'px'
     this.htmlElement.style.left = this.position.x + 'px'
     this.htmlElement.style.transition = this.timeTick + 'ms'
+
+    this.htmlElementBackground = document.createElement('div')
+    this.htmlElementBackground.classList.add('ball-background')
+    this.htmlElement.appendChild(this.htmlElementBackground)
+
+    this.htmlElementEyes = document.createElement('div')
+    this.htmlElementEyes.classList.add('ball-eyes')
+    this.htmlElementBackground.appendChild(this.htmlElementEyes)
 
     this.getPower()
 
@@ -70,6 +81,11 @@ class Ball {
 
     this.htmlElement.style.bottom = this.position.y + 'px'
     this.htmlElement.style.left = this.position.x + 'px'
+    if (this.position.y > 0) {
+      this.htmlElementBackground.style.transform = `rotate(${this.angle}deg)`
+      this.angle += 10
+      if (this.angle >= 360) this.angle = 0
+    }
   }
 
   getPower() {
@@ -82,7 +98,7 @@ class Ball {
 
     this.container.addEventListener('click', evt => {
       if (Math.abs(this.position.y) > 0) {
-        this.htmlElement.style.transition = '1s'
+        this.htmlElement.style.transition = '350ms'
         this.velocity.y = 0
         this.velocity.x = 0
         this.position.x = this.container.offsetWidth / 2 - this.radius
@@ -147,7 +163,7 @@ class Target {
       x: level >= 4 ? (level % 2 ? level * 35 : level * -35) : 0
     }
 
-    this.radius = Math.random() * 15 + 10
+    this.radius = Math.random() * 10 + 20
     this.position = {
       x: ((Math.random() * 90 + 5) / 100) * this.container.offsetWidth,
       y: ((Math.random() * 40 + 50) / 100) * this.container.offsetHeight,
@@ -168,6 +184,8 @@ class Target {
     this.position.center.y = this.radius + this.position.y
 
     this.htmlElement = null
+    this.htmlElementBackground = null
+    this.htmlElementEyes = null
   }
 
   init() {
@@ -178,6 +196,14 @@ class Target {
     this.htmlElement.style.bottom = this.position.y + 'px'
     this.htmlElement.style.left = this.position.x + 'px'
     this.htmlElement.style.tansition = this.timeTick + 'ms'
+
+    this.htmlElementBackground = document.createElement('div')
+    this.htmlElementBackground.classList.add('target-background')
+    this.htmlElement.appendChild(this.htmlElementBackground)
+
+    this.htmlElementEyes = document.createElement('div')
+    this.htmlElementEyes.classList.add('target-eyes')
+    this.htmlElement.appendChild(this.htmlElementEyes)
 
     return this
   }
@@ -203,6 +229,12 @@ class Target {
       this.velocity.y = -1 * this.velocity.y
     }
 
+    if (this.position.y <= 0) {
+      this.position.y = 0
+      this.velocity.y = 0
+      this.velocity.x = 0
+    }
+
     this.position.center.x = this.radius + this.position.x
     this.position.center.y = this.radius + this.position.y
 
@@ -219,7 +251,7 @@ class Game {
     this.maxLevel = 20
     this.shots = 0
 
-    this.ball = new Ball(this.container, 15, this.shotsCounter())
+    this.ball = new Ball(this.container, 23, this.shotsCounter())
     this.ball.init()
 
     this.mainInterval = null
@@ -245,6 +277,9 @@ class Game {
     this.container.appendChild(this.shotsContainer)
 
     this.ball.append()
+
+    this.target = new Target(this.targetContainer, this.level)
+    this.target.init().append()
 
     this.mainInterval = setInterval(this.mainLoop.bind(this), this.timeTick)
 
@@ -310,35 +345,38 @@ class Game {
 
       if (c <= this.ball.radius + this.target.radius) {
         this.target.wasCollision = true
+        this.collision()
         setTimeout(() => {
-          this.target.velocity.x = 0
-          this.target.velocity.y = 0
-          this.target.htmlElement.style.transition = '200ms'
-          this.target.htmlElement.style.opacity = '0'
-          this.level++
-          if (this.level > this.maxLevel) {
-            this.level = this.maxLevel
-            this.initEndScreen()
-          }
-
-          this.ball.htmlElement.style.transition = '1s'
-          this.ball.velocity.y = 0
-          this.ball.velocity.x = 0
-          this.ball.position.x = this.container.offsetWidth / 2 - this.ball.radius
-          this.ball.position.y = 0
-
-          this.levelContainer.innerText = `Level: ${this.level}/${this.maxLevel}`
-          setTimeout(() => {
-            this.target = null
-            this.targetContainer.innerText = ''
-          }, 200)
-        }, 50)
+          this.target = null
+        }, 800)
       }
     }
   }
 
+  collision() {
+    this.level++
+    this.levelContainer.innerText = `Level: ${this.level}/${this.maxLevel}`
+    if (this.level > this.maxLevel) {
+      this.level = this.maxLevel
+      this.initEndScreen()
+    }
+
+    this.ball.htmlElement.style.transition = '350ms'
+    this.ball.velocity.y = 0
+    this.ball.velocity.x = 0
+    this.ball.position.x = this.container.offsetWidth / 2 - this.ball.radius
+    this.ball.position.y = 0
+
+    this.target.velocity.x = 0
+    this.target.velocity.y = 0
+    this.target.htmlElementBackground.style.opacity = '0'
+    this.target.htmlElementEyes.style.top = '100px'
+    this.target.htmlElementEyes.style.opacity = '0'
+  }
+
   newTarget() {
     if (!this.target && !this.ball.position.y) {
+      this.targetContainer.innerText = ''
       this.target = new Target(this.targetContainer, this.level)
       this.target.init().append()
     }
