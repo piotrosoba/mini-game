@@ -37,7 +37,7 @@ class Ball {
     this.htmlElement.style.height = this.radius * 2 + 'px'
     this.htmlElement.style.bottom = this.position.y + 'px'
     this.htmlElement.style.left = this.position.x + 'px'
-    this.htmlElement.style.transition = this.timeTick + 'ms'
+    this.htmlElement.style.transition = this.timeTick + 'ms linear'
 
     this.htmlElementBackground = document.createElement('div')
     this.htmlElementBackground.classList.add('ball-background')
@@ -48,6 +48,7 @@ class Ball {
     this.htmlElementBackground.appendChild(this.htmlElementEyes)
 
     this.getPower()
+    this.listeners()
 
     return this
   }
@@ -83,9 +84,25 @@ class Ball {
     this.htmlElement.style.left = this.position.x + 'px'
     if (this.position.y > 0) {
       this.htmlElementBackground.style.transform = `rotate(${this.angle}deg)`
-      this.angle += 10
+      this.angle += 5
       if (this.angle >= 360) this.angle = 0
     }
+  }
+
+  backToCenter() {
+    this.htmlElement.style.transition = '350ms linear'
+    this.velocity.y = 0
+    this.velocity.x = 0
+    this.position.x = this.container.offsetWidth / 2 - this.radius
+    this.position.y = 0
+  }
+
+  listeners() {
+    this.container.addEventListener('click', evt => {
+      if (this.position.y > 0) {
+        this.backToCenter()
+      }
+    })
   }
 
   getPower() {
@@ -95,16 +112,6 @@ class Ball {
     const line = document.createElement('div')
     line.classList.add('line')
     this.htmlElement.appendChild(line)
-
-    this.container.addEventListener('click', evt => {
-      if (Math.abs(this.position.y) > 0) {
-        this.htmlElement.style.transition = '350ms'
-        this.velocity.y = 0
-        this.velocity.x = 0
-        this.position.x = this.container.offsetWidth / 2 - this.radius
-        this.position.y = 0
-      }
-    })
 
     this.htmlElement.addEventListener('mousedown', evt => {
       evt.preventDefault()
@@ -119,7 +126,7 @@ class Ball {
         const lineX = evt.pageX - ballCenterX
         const lineY = evt.pageY - ballCenterY
         let lineWidth = Math.sqrt(Math.pow(lineX, 2) + Math.pow(lineY, 2)) - 10
-        if (lineWidth > 150) lineWidth = 150
+        if (lineWidth > 100) lineWidth = 100
         const deg = lineX >= 0 ? Math.atan(lineY / lineX) : Math.atan(lineY / lineX) + Math.PI
 
         line.style.width = lineWidth + 'px'
@@ -130,19 +137,19 @@ class Ball {
     document.addEventListener('mouseup', evt => {
       evt.preventDefault()
       if (this.allowShot === 1) {
-        this.velocity.x = (ballCenterX - evt.pageX) * 2
+        this.velocity.x = ((ballCenterX - evt.pageX) * this.velocity.max) / 100
         if (Math.abs(this.velocity.x) > this.velocity.max) {
           this.velocity.x >= 0
             ? (this.velocity.x = this.velocity.max)
             : this.velocity !== 0 && (this.velocity.x = -1 * this.velocity.max)
         }
 
-        this.velocity.y = Math.abs(evt.pageY - ballCenterY) * 2
+        this.velocity.y = (Math.abs(evt.pageY - ballCenterY) * this.velocity.max) / 100
         if (Math.abs(this.velocity.y) > this.velocity.max) {
           this.velocity.y = this.velocity.max
         }
         if (this.velocity.y > 50) this.shotsCounter()
-        this.htmlElement.style.transition = this.timeTick + 'ms'
+        this.htmlElement.style.transition = this.timeTick + 'ms linear'
       }
 
       line.style.width = 0
@@ -361,11 +368,7 @@ class Game {
       this.initEndScreen()
     }
 
-    this.ball.htmlElement.style.transition = '350ms'
-    this.ball.velocity.y = 0
-    this.ball.velocity.x = 0
-    this.ball.position.x = this.container.offsetWidth / 2 - this.ball.radius
-    this.ball.position.y = 0
+    this.ball.backToCenter()
 
     this.target.velocity.x = 0
     this.target.velocity.y = 0

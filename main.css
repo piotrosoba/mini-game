@@ -8,12 +8,14 @@ body {
 
 .container {
   position: relative;
-  width: 1000px;
-  height: 400px;
+  width: 80%;
+  height: 80vh;
   border: 2px solid black;
   border-radius: 4px;
-  background-color: azure;
-  margin-top: 20px;
+  background-image: url('./background.jpg');
+  /* background-position: bottom; */
+  background-size: cover;
+  margin-top: 5px;
 }
 
 .ball {
@@ -83,13 +85,13 @@ body {
 
 .target-eyes {
   position: absolute;
-  background-image: url('./eyes.png');
+  background-image: url('./target-eyes.png');
   background-size: 100%;
   background-repeat: no-repeat;
-  top: 10%;
-  left: 20%;
+  top: 6%;
+  left: 17%;
   width: 60%;
-  height: 50%;
+  height: 71%;
   transition: 800ms;
   transition-timing-function: linear;
 }
