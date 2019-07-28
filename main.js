@@ -43,10 +43,6 @@ class Ball {
     this.htmlElementBackground.classList.add('ball-background')
     this.htmlElement.appendChild(this.htmlElementBackground)
 
-    this.htmlElementEyes = document.createElement('div')
-    this.htmlElementEyes.classList.add('ball-eyes')
-    this.htmlElementBackground.appendChild(this.htmlElementEyes)
-
     this.getPower()
     this.listeners()
 
@@ -164,6 +160,7 @@ class Target {
     this.timeTick = 40 //ms
     this.time = this.timeTick / 1000 // s
     this.wasCollision = false
+    this.acceleration = level >= 7 ? -120 : 0
 
     this.velocity = {
       y: level >= 7 ? Math.random() * 100 + level * 5 : 0,
@@ -184,7 +181,7 @@ class Target {
       },
       min: {
         x: 0,
-        y: this.container.offsetHeight / 4
+        y: this.container.offsetHeight / 3
       }
     }
     this.position.center.x = this.radius + this.position.x
@@ -227,19 +224,15 @@ class Target {
         : (this.position.x = this.position.max.x)
       this.velocity.x = -1 * this.velocity.x
     }
+    if (Math.random() > 0.995) this.velocity.x = this.velocity.x * -1
 
-    this.position.y += this.velocity.y * this.time
+    this.velocity.y += this.acceleration * this.time
+    this.position.y += this.velocity.y * this.time - (this.acceleration * this.time * this.time) / 2
     if (this.position.y <= this.position.min.y || this.position.y >= this.position.max.y) {
       this.position.y <= this.position.min.y
         ? (this.position.y = this.position.min.y)
         : (this.position.y = this.position.max.y)
       this.velocity.y = -1 * this.velocity.y
-    }
-
-    if (this.position.y <= 0) {
-      this.position.y = 0
-      this.velocity.y = 0
-      this.velocity.x = 0
     }
 
     this.position.center.x = this.radius + this.position.x
@@ -326,12 +319,12 @@ class Game {
 
     const description = document.createElement('p')
     description.classList.add('splash-screen__description')
-    description.innerHTML =
+    description.innerText =
       this.shots <= 30
         ? `HOORAY! :)
 Only ${this.shots} shots.`
         : `You can do it better... :(
-Too much shots - ${this.shots}.`
+Too much shots - ${this.shots}`
     endScreen.appendChild(description)
 
     const againButton = document.createElement('div')
@@ -339,7 +332,7 @@ Too much shots - ${this.shots}.`
     againButton.innerText = 'PLAY AGAIN!'
     againButton.addEventListener('click', () => {
       this.container.innerText = ''
-      this.level = 0
+      this.level = 1
       this.shots = 0
       this.ball.velocity.y = 0
       this.ball.velocity.x = 0
